@@ -5,11 +5,22 @@ import secrets
 import string
 import time
 
+# 1. Import ส่วนของ Rate Limiting ที่เพิ่มเข้ามา
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 app = Flask(__name__)
 # แสดง JSON ตามลำดับที่เขียนไว้ใน Dictionary
 app.json.sort_keys = False
 
-WORK_FACTOR = 2000_000 ##---------##
+# 2. สร้าง Instance ของ Limiter ป้องกัน HTTP Flood (DDoS)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri="memory://"
+)
+
+WORK_FACTOR = 2_000_000 ##---------##
 PASSWORD_LENGTH = 10
 SALT_SIZE_BYTES = 16
 
@@ -41,6 +52,8 @@ def home():
 
 
 @app.route("/login-check")
+# 3. เพิ่มกฎ Rate Limit ให้กับ Endpoint นี้ (จำกัด 5 Request ต่อ 1 วินาที)
+@limiter.limit("5 per second")
 def login_check():
     start_time = time.perf_counter()
 
