@@ -5,22 +5,21 @@ import secrets
 import string
 import time
 
-# 1. Import ส่วนของ Rate Limiting
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-app = Flask(__name__)
-# แสดง JSON ตามลำดับที่เขียนไว้ใน Dictionary
+app = Flask(_name_)
 app.json.sort_keys = False
 
-# 2. สร้าง Instance ของ Limiter (แก้ไขเพิ่ม key_func= สำหรับเวอร์ชันใหม่)
 limiter = Limiter(
-    key_func=get_remote_address,
+    get_remote_address,
     app=app,
+    default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://"
 )
 
-WORK_FACTOR = 2_000_000 ##---------##
+# คืนค่าตัวเลขชุดดั้งเดิมสำหรับนำไปวิเคราะห์ผลสรุปของ k6
+WORK_FACTOR = 2_000_000
 PASSWORD_LENGTH = 10
 SALT_SIZE_BYTES = 16
 
@@ -52,7 +51,6 @@ def home():
 
 
 @app.route("/login-check")
-# 3. เพิ่มกฎ Rate Limit ให้กับ Endpoint นี้
 @limiter.limit("5 per second")
 def login_check():
     start_time = time.perf_counter()
@@ -83,15 +81,19 @@ def login_check():
         "algorithm": "PBKDF2-HMAC-SHA256",
         "work_factor": WORK_FACTOR,
 
-        "calculated_password_hash": calculated_password_hash.hex(),
-        "stored_password_hash": STORED_PASSWORD_HASH.hex(),
-        "hash_size_bits": len(calculated_password_hash) * 8,
+        "calculated_password_hash":
+            calculated_password_hash.hex(),
+        "stored_password_hash":
+            STORED_PASSWORD_HASH.hex(),
+        "hash_size_bits":
+            len(calculated_password_hash) * 8,
         "password_valid": password_is_valid,
-        "execution_time_seconds": round(execution_time, 4),
+        "execution_time_seconds":
+            round(execution_time, 4),
     })
 
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     app.run(
         host="0.0.0.0",
         port=8080,
