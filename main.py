@@ -19,7 +19,7 @@ limiter = Limiter(
 )
 
 # คืนค่าตัวเลขชุดดั้งเดิมสำหรับนำไปวิเคราะห์ผลสรุปของ k6
-WORK_FACTOR = 50
+WORK_FACTOR = 1
 PASSWORD_LENGTH = 10
 SALT_SIZE_BYTES = 16
 
